@@ -1,0 +1,170 @@
+#include <AFMotor.h>  //for stepper and DC motors
+#include <Servo.h>    //for servo motors
+
+AF_Stepper motor(200, 2);
+AF_DCMotor motor4(1);
+AF_DCMotor motor2(2); 
+Servo punch_servo;
+
+
+String text;
+int page[12][20]={0,0};
+int alphabets[156]={ 1,0,0,0,0,0,1,0,1,0,0,0,1,1,0,0,0,0,1,1,0,1,0,0,1,0,0,1,0,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,1,0,0,0,1,1,0,0,0,0,1,1,1,0,0,1,0,0,0,1,0,1,0,1,0,1,0,1,
+1,0,0,1,0,1,1,0,1,1,0,1,0,0,1,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,0,0,1,1,0,1,0,0,1,1,1,1,0,1,0,0,0,1,1,1,0,1,0,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,1,0,1,1,1,1,0,0,1,1,1};
+
+int numbers[60]={0,1,1,1,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,1,0,0,0,0,1,1,0,1,0,0
+,1,0,0,1,0,0,1,1,1,0,0,0,1,1,1,1,0,0,1,0,1,1,0,0,0,1,1,0,0,0};
+
+void next_line()
+{
+  motor4.run(FORWARD);
+  motor2.run(FORWARD);
+  delay(100);  
+  motor4.run(RELEASE);
+  motor2.run(RELEASE);  
+}
+void move_right()
+{
+motor.step(50, FORWARD, SINGLE);  
+}
+void move_left()
+{
+motor.step(50, BACKWARD, SINGLE);  
+}
+void punch()
+{
+    punch_servo.write(180);
+    delay(300);
+    punch_servo.write(0);
+    delay(300);  
+}
+void setup() {
+  // put your setup code here, to run once:
+  punch_servo.attach(10);
+  punch_servo.write(90);
+  motor.setSpeed(100);  // 10 rpm    
+//  motor.step(200, FORWARD, SINGLE); 
+  motor.release();
+  delay(2000);
+  motor4.setSpeed(255);
+  motor2.setSpeed(235);
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+//while(Serial.available())
+//{
+//  text=Serial.readString();
+//}
+text="braille printer";
+int len=text.length();
+int no_of_chars_per_line=10;
+int i=0;
+int chars_covered=0;
+int line=0;
+int lines_in_text=len/no_of_chars_per_line;
+while(chars_covered<len)
+{
+  int chars_covered_in_this_line=0;
+  while(chars_covered_in_this_line<=no_of_chars_per_line)
+  {
+    if(chars_covered==len)                                                            //for last line
+    break;
+    
+    if((i=text[chars_covered_in_this_line+(line)*no_of_chars_per_line]-'a')<=25)
+    {
+      page[line*3+0][chars_covered_in_this_line*2+0]=alphabets[i*6+0];
+      page[line*3+0][chars_covered_in_this_line*2+1]=alphabets[i*6+1];
+      page[line*3+1][chars_covered_in_this_line*2+0]=alphabets[i*6+2];
+      page[line*3+1][chars_covered_in_this_line*2+1]=alphabets[i*6+3];
+      page[line*3+2][chars_covered_in_this_line*2+0]=alphabets[i*6+4];
+      page[line*3+2][chars_covered_in_this_line*2+1]=alphabets[i*6+5];
+    }
+    else if((i=text[chars_covered_in_this_line+(line)*no_of_chars_per_line]-'0')<=9)
+    {
+      page[line*3+0][chars_covered_in_this_line*2+0]=numbers[i*6+0];
+      page[line*3+0][chars_covered_in_this_line*2+1]=numbers[i*6+1];
+      page[line*3+1][chars_covered_in_this_line*2+0]=numbers[i*6+2];
+      page[line*3+1][chars_covered_in_this_line*2+1]=numbers[i*6+3];
+      page[line*3+2][chars_covered_in_this_line*2+0]=numbers[i*6+4];
+      page[line*3+2][chars_covered_in_this_line*2+1]=numbers[i*6+5];
+    }
+    chars_covered_in_this_line++;
+    chars_covered++;
+  }
+  line++;
+}
+line=0;
+while(line<3*(lines_in_text-1))
+{
+  if(line%2==0)
+  {
+    for(int j=19;j>=0;j--)
+    { 
+    if(page[line][j]==1)
+    {
+      punch();
+      delay(10);
+    }
+     move_right();
+    delay(10);
+    }
+  }
+  else
+  {
+    for(int j=0;j<=19;j++)
+    {
+      if(page[line][j]==1)
+      {
+          punch();
+        delay(10);  
+      }
+       move_left();
+      delay(10);
+    }
+  }
+  line++;
+  if(line%3==0)
+  {
+    next_line();
+    next_line();
+  }
+  else
+  {
+    next_line();
+  }
+}
+int last_line=line+2;
+int chars_left=len-(no_of_chars_per_line)*(line/3);
+int x=2*chars_left;
+while(line<=last_line)
+{ 
+if(line%2==1)
+{
+  for(int j=0;j<x;j++)
+  {
+    if(page[line][j]==1)
+    {
+       punch();
+      delay(10);
+    }
+     move_left();
+    delay(10);
+  }
+}
+else
+{
+  for(int j=19-x;j>=0;j--)
+  {
+    if(page[line][j]==1)
+    {
+       punch();
+      delay(10);
+    }
+      move_right();
+    delay(10);
+  }
+}
+next_line();
+}
+}
