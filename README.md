@@ -1,5 +1,5 @@
 # Braille-Printer
-Code for Punching of braille 
+Code for Punching of Braille, 
 Built a cheap and efficient braille printer as part of a course project.
 The printer is cheaper compared to the ones commercially available and also more efficient in printing.
 The efficiency of the printer was increased by making it punch while going from left to right and also when returning from right to left.
