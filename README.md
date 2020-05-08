@@ -3,7 +3,7 @@ Code for Punching of Braille,
 Built a cheap and efficient braille printer as part of a course project.
 The printer is cheaper compared to the ones commercially available and also more efficient in printing.
 The efficiency of the printer was increased by making it punch while going from left to right and also when returning from right to left.
-The code is also very efficient and occupies only 50% of the memory of the Arduino Uno board.
+The code is efficient and occupies only 50% of the memory of the Arduino Uno board.
 
 # Working of the code and algorithm
 The whole page was perceived as a 2-D array of size 12 * 20(easily changable because finally variables were used) considering the requirements of the Braille alphabet.When the input was taken the letters and numbers present in the input string were broken down into their respecitve Braille counterparts and the "page" array was made.
